@@ -80,7 +80,6 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             true
         }
 
-
         runnableRevert = Runnable {
             when {
                 number > 0 -> {
@@ -100,7 +99,6 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                 }
             }
         }
-
 
         runnableIncrease = Runnable {
             handler.removeCallbacks(runnableRevert)
@@ -155,7 +153,6 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         }
     }
 
-
     private fun changeColor() {
         if (Math.abs(numberBuff - number) > 100) {
             val ramdom = Random()
@@ -172,7 +169,6 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         gestureDetector.onTouchEvent(event)
-//        Log.d("number", "onTouchEvent: " + event?.action.toString())
         when (event?.action) {
             0 -> {
                 y1 = event.y
