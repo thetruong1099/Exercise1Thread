@@ -65,10 +65,10 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
         btnReduce.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
-                btnIncrease.setBackgroundColor(Color.GREEN)
+                btnReduce.setBackgroundColor(Color.GREEN)
                 handler.post(runnableReduce)
             } else if (event.action == MotionEvent.ACTION_UP) {
-                btnIncrease.setBackgroundColor(Color.parseColor("#FF03DAC5"))
+                btnReduce.setBackgroundColor(Color.parseColor("#FF03DAC5"))
                 handler.removeCallbacks(runnableReduceFast)
                 handler.postDelayed(runnableRevert, 1000)
             }
