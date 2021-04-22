@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         }
     }
 
-    private suspend fun updateUI(iNumber:Int) {
+    private suspend fun updateUI(iNumber: Int) {
         withContext(Dispatchers.Main) {
             changeColor()
             tvNumber.text = iNumber.toString()
