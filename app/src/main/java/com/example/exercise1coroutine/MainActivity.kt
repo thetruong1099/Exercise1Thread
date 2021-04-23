@@ -7,9 +7,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.VelocityTracker
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import java.util.*
+import kotlin.math.log
 
 class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private var number = 0
@@ -24,11 +26,6 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
     private lateinit var gestureDetector: GestureDetector
     private var y2: Float = 0.0f
-    private var y1: Float = 0.0f
-
-    companion object {
-        const val MIN_DISTANCE = 150
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +47,8 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             }
             if (event.action == MotionEvent.ACTION_DOWN) {
                 btnIncrease.setBackgroundColor(Color.GREEN)
+                jobInCreaseFastNumber.cancel()
+                jobRevertNumber.cancel()
                 numberIncrease()
             }
             false
@@ -69,6 +68,8 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             }
             if (event.action == MotionEvent.ACTION_DOWN) {
                 btnReduce.setBackgroundColor(Color.GREEN)
+                jobInCreaseFastNumber.cancel()
+                jobRevertNumber.cancel()
                 numberReduce()
             }
 
@@ -86,7 +87,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         jobReduceFastNumber = GlobalScope.launch {
             while (true) {
                 number--
-                delay(100)
+                delay(50)
                 updateUI(number)
             }
         }
@@ -103,7 +104,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         jobInCreaseFastNumber = GlobalScope.launch {
             while (true) {
                 number++
-                delay(100)
+                delay(50)
                 updateUI(number)
             }
         }
@@ -125,14 +126,17 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                 number > 0 -> {
                     while (number > 0) {
                         number--
-                        delay(100)
+                        if (number == 0) status = false
+                        delay(50)
                         updateUI(number)
+
                     }
                 }
                 number < 0 -> {
                     while (number < 0) {
                         number++
-                        delay(100)
+                        if (number == 0) status = false
+                        delay(50)
                         updateUI(number)
                     }
                 }
@@ -167,7 +171,9 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         gestureDetector.onTouchEvent(event)
         when (event?.action) {
             0 -> {
-                y1 = event.y
+                jobRevertNumber.cancel()
+                jobRevertNumberBuffer1.cancel()
+//                Log.d("testcoroutine", "onTouchEvent: $status")
             }
 
             1 -> {
@@ -175,50 +181,52 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                     numberBuff1 = number
                     jobRevertNumber.cancel()
                     revertNumberToZero()
-                    status = false
                 } else {
-                    jobRevertNumberBuffer1.cancel()
                     revertNumberBufferToZero()
                 }
 
             }
 
             2 -> {
-                y2 = event.y
-                val valueY: Float = y2 - y1
-                if (Math.abs(valueY) > MIN_DISTANCE) {
-                    if (valueY < 0) {
+                CoroutineScope(Dispatchers.Default).launch {
+                    y2 = event.y
+                    var yTemp = GlobalScope.async {
+                        delay(100)
+                        getYTempDelay(y2)
+                    }
+                    var valueY: Float = y2 - yTemp.await()
+                    if (valueY > 0) {
                         jobInCreaseFastNumber.cancel()
                         numberIncrease()
-
                     } else {
                         numberReduce()
+                        status = true
                     }
                 }
-                status = true
             }
         }
-
-
         return super.onTouchEvent(event)
     }
 
+    private fun getYTempDelay(y: Float): Float = y
+
     private fun revertNumberBufferToZero() {
+        var numberBuffTemp = numberBuff1
         jobRevertNumberBuffer1 = GlobalScope.launch {
             delay(1000)
             when {
-                numberBuff1 > 0 -> {
-                    while (numberBuff1 > 0) {
-                        numberBuff1--
-                        delay(100)
-                        updateUI(numberBuff1)
+                numberBuffTemp > 0 -> {
+                    while (numberBuffTemp > 0) {
+                        numberBuffTemp--
+                        delay(50)
+                        updateUI(numberBuffTemp)
                     }
                 }
-                numberBuff1 < 0 -> {
-                    while (numberBuff1 < 0) {
-                        numberBuff1++
-                        delay(100)
-                        updateUI(numberBuff1)
+                numberBuffTemp < 0 -> {
+                    while (numberBuffTemp < 0) {
+                        numberBuffTemp++
+                        delay(50)
+                        updateUI(numberBuffTemp)
                     }
                 }
                 else -> {
